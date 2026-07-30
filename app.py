@@ -237,7 +237,14 @@ def handle_webhook():
     try:
         for entry in data.get("entry", []):
             for messaging_event in entry.get("messaging", []):
-                sender_id = messaging_event["sender"]["id"]
+                sender = messaging_event.get("sender")
+                if not sender or "id" not in sender:
+                    # Это не обычное сообщение (например, message_edit,
+                    # тестовое событие или reaction) — пропускаем
+                    print("Skipping non-message event:", messaging_event)
+                    continue
+
+                sender_id = sender["id"]
                 message = messaging_event.get("message", {})
 
                 # Игнорируем собственные сообщения (эхо), чтобы не зациклиться
